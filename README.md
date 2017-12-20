@@ -1,2 +1,2 @@
-# single_multinode_autodeploy
-Final tested single node auto deploy
+# cloud_hdp_auto_deploy
+HDP install using blueprint automated on cloud platform
