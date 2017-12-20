@@ -93,7 +93,6 @@ priority=1" > /tmp/ambari-$AMBARIVERSION.repo
 
 pre-rep()
 {
-
         for host in `echo $AMBARI_AGENTS`
         do
                 AMBARI_AGENT=`echo $host`.$DOMAIN_NAME
@@ -102,7 +101,7 @@ pre-rep()
         then
 		sudo rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/sshpass-1.06-2.el7.x86_64.rpm &> /tmp/sshpass_install.txt
         	sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_AGENT sudo mkdir /etc/yum.repos.d/bkp 2> /dev/null
-		sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_AGENT sudo mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/bkp/  2> /dev/null
+		sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_AGENT "sudo mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/bkp/"  2> /dev/null
                         wait
                         sshpass -p $PASSWORD scp -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/ambari-"$AMBARIVERSION".repo $USER@$host_ip:/tmp/ambari-"$AMBARIVERSION".repo &> /dev/null 
                         wait
