@@ -147,7 +147,7 @@ echo -e  "\033[36m`date +%Y-%m-%d-%H:%M:%S`\033[0m"
 installhdp()
 {
 #Install hdp using Ambari Blueprints
-echo -e "\033[32m`timestamp` Installing HDP Using Blueprints\033[0m"
+echo -e "\033[32m`timestamp` \033[32mInstalling HDP Using Blueprints\033[0m"
 
 HDP_UTILS_VERSION=`echo $BASE_URL_UTILS| awk -F'/' '{print $7}'`
 
@@ -166,19 +166,19 @@ curl -H "X-Requested-By: ambari" -X POST -u admin:admin http://$AMBARI_HOST:8080
 ################
 
 #Generate hostmap
-#echo -e "\033[032m`timestamp` Generating hostmap json..\033[0m"
+echo -e "\033[032m`timestamp` \033[32mGenerating hostmap json..\033[0m"
 hostmap > $LOC/hostmap.json
-echo -e "\033[032m`timestamp` Saved $LOC/hostmap.json\033[0m"
+echo -e "\033[032m`timestamp` \033[32mSaved $LOC/hostmap.json\033[0m"
 
 #Generate cluster config json
-echo -e "\033[032m`timestamp` Generating cluster configuration json\033[0m"
+echo -e "\033[032m`timestamp` \033[32mGenerating cluster configuration json\033[0m"
 clustermap > $LOC/cluster_config.json
-echo -e "\033[032m`timestamp` Saved $LOC/cluster_config.json\033[0m"
+echo -e "\033[032m`timestamp` \033[32mSaved $LOC/cluster_config.json\033[0m"
 
 #Create internal repo json 
+echo -e "\033[032m`timestamp` \033[32mGenerating internal repositories json..\033[0m"
 repobuilder 
-echo -e "\033[032m`timestamp` Generating internal repositories json..\033[0m"
-echo -e "\033[032m`timestamp` Saved $LOC/repo.json & $LOC/repo-utils.json\033[0m"
+echo -e "\033[032m`timestamp` \033[32mSaved $LOC/repo.json & $LOC/repo-utils.json\033[0m"
 
 #Start hdp installation
 installhdp

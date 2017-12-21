@@ -110,6 +110,8 @@ pre-rep()
                         sshpass -p $PASSWORD scp -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/centos7.repo $USER@$host_ip:/tmp/centos7.repo 2> /dev/null
                         wait
                         sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo cp /tmp/centos7.repo /etc/yum.repos.d/ 2> /dev/null
+	        	sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo yum -y install mysql-community-release 2&>1 /dev/null
+			sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER "sudo mv /etc/yum.repos.d/mysql*.repo /tmp" &> /dev/null
                         wait
         else
 			rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/sshpass-1.06-2.el7.x86_64.rpm &> /tmp/sshpass_install.txt
@@ -121,6 +123,8 @@ pre-rep()
                         sshpass -p $PASSWORD scp -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/ambari-"$AMBARIVERSION".repo $USER@$host_ip:/etc/yum.repos.d/ 2> /dev/null &
                         wait
                         sshpass -p $PASSWORD scp -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/centos7.repo $USER@$host_ip:/etc/yum.repos.d/ 2> /dev/null &
+			sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER yum -y install mysql-community-release 2&>1 /dev/null
+                	sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER "mv /etc/yum.repos.d/mysql*.repo /tmp" &> /dev/null
                         wait
         fi
         done
@@ -129,7 +133,7 @@ pre-rep()
 
 install_java()
 {
-	echo -e "\033[32m`timestamp` Installing JAVA \033[0m"
+	echo -e "\033[32m`timestamp` \033[32mInstalling JAVA \033[0m"
 	for host in `echo $AMBARI_AGENTS`
         do
                 HOST=`echo $host`.$DOMAIN_NAME
@@ -146,7 +150,7 @@ install_java()
 
 bootstrap_hosts()
 {
-        echo -e "\033[32m`timestamp` Bootstrap Hosts \033[0m"
+        echo -e "\033[32m`timestamp` \033[32mBootstrap Hosts \033[0m"
         for host in `echo $AMBARI_AGENTS`
         do
                 HOST=`echo $host`.$DOMAIN_NAME
@@ -179,7 +183,7 @@ bootstrap_hosts()
 
 setup_ambari_server()
 {
-	echo -e "\033[32m`timestamp` Installing Ambari-Server\033[0m"
+	echo -e "\033[32m`timestamp` \033[32mInstalling Ambari-Server\033[0m"
 
 #        ssh -i $PVT_KEYFILE -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER yum -y install ambari-server
 #        ssh -i $PVT_KEYFILE -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER ambari-server setup -s
@@ -204,7 +208,7 @@ setup_ambari_server()
 
 setup_ambari_agent()
 {
-	echo -en "\033[32m`timestamp` Installing Ambari-Agent\033[0m"
+	echo -en "\033[32m`timestamp` \033[32mInstalling Ambari-Agent\033[0m"
         for host in `echo $AMBARI_AGENTS`
         do
                 AMBARI_AGENT=`echo $host`.$DOMAIN_NAME
@@ -231,9 +235,9 @@ setup_hdp()
 #	echo -e  "\033[32m`timestamp` Please hit http://$AMBARI_SERVER_IP:8080 in your browser and check installation status"'!'"\033[0m"
         if [ "$CLUSTER_PROPERTIES" = "cluster_cloud.props" ]
         then
-		echo -e  "\033[32m`timestamp` Please hit\033[0m \033[44mhttp://$PUBLIC_IP:8080\033[0m \033[32min your browser and check installation status"'!'"\033[0m"
+		echo -e  "\033[32m`timestamp` \033[32mPlease hit\033[0m \033[44mhttp://$PUBLIC_IP:8080\033[0m \033[32min your browser and check installation status"'!'"\033[0m"
 	else
-		echo -e  "\033[32m`timestamp` Please hit\033[0m \033[44mhttp://$IP:8080\033[0m \033[32min your browser and check installation status"'!'"\033[0m"
+		echo -e  "\033[32m`timestamp` \033[32mPlease hit\033[0m \033[44mhttp://$IP:8080\033[0m \033[32min your browser and check installation status"'!'"\033[0m"
 	fi
 		
 #        mv ~/.ssh/known_hosts.bak ~/.ssh/known_hosts
@@ -246,13 +250,13 @@ setup_hdp()
 }
 
 
-echo -e  "\033[32m`timestamp` Getting Host and IP Details\033[0m"
+echo -e  "\033[32m`timestamp` \033[32mGetting Host and IP Details\033[0m"
 prepare_hosts_file
-echo -e  "\033[32m`timestamp` Setting up Base OS Repository\033[0m"
+echo -e  "\033[32m`timestamp` \033[32mSetting up Base OS Repository\033[0m"
 generate_centos_repo
-echo -e  "\033[32m`timestamp` Setting up Ambari Repository\033[0m"
+echo -e  "\033[32m`timestamp` \033[32mSetting up Ambari Repository\033[0m"
 generate_ambari_repo
-echo -e  "\033[32m`timestamp` Check for Pre-requisites\033[0m"
+echo -e  "\033[32m`timestamp` \033[32mCheck for Pre-requisites\033[0m"
 pre-rep
 install_java
 bootstrap_hosts
