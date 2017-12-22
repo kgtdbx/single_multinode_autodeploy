@@ -32,7 +32,7 @@ AMBARI_SERVER=`grep -w HOST[0-9]* $LOC/$CLUSTER_PROPERTIES|head -1|cut -d'=' -f2
 AMBARI_AGENTS=`grep -w HOST[0-9]* $LOC/$CLUSTER_PROPERTIES|cut -d'=' -f2`
 USER=`grep -w SSH_USER $LOC/$CLUSTER_PROPERTIES|cut -d'=' -f2`
 PASSWORD=`grep -w SSH_SERVER_PASSWORD $LOC/$CLUSTER_PROPERTIES|cut -d'=' -f2`
-IP=`grep -w IP[1-9]* $LOC/$CLUSTER_PROPERTIES|cut -d'=' -f2`
+IP=`grep -w IP[1-9]* $LOC/$CLUSTER_PROPERTIES|cut -d'=' -f2|head -n 1`
 REPO_SERVER=`grep  -w REPO_SERVER  $LOC/$CLUSTER_PROPERTIES |cut -d'=' -f2`
 JAVA_HOME=`grep  -w JAVA  $LOC/$CLUSTER_PROPERTIES |cut -d'=' -f2`
 AS=`grep -w HOST[0-9]* $LOC/$CLUSTER_PROPERTIES|head -1|cut -d'=' -f2`
