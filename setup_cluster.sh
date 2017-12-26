@@ -286,9 +286,9 @@ generate_centos_repo
 echo -e  "\033[32m`timestamp` \033[32mSetting up Ambari Repository\033[0m"
 generate_ambari_repo
 echo -e  "\033[32m`timestamp` \033[32mCheck for Pre-requisites\033[0m"
-#pre-rep
-#install_java
-#bootstrap_hosts
-#setup_ambari_server
-#setup_ambari_agent
+pre-rep
+install_java
+bootstrap_hosts
+setup_ambari_server
+setup_ambari_agent
 setup_hdp
