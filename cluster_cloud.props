@@ -1,5 +1,3 @@
-#Note - Please visit http://XX.XX.XX.XX/versions.htm for available Ambari & HDP versions information.
-
 #######################  EDIT BELOW INFORMATION  #######################
 
 CLUSTERNAME=hdptest
@@ -15,24 +13,18 @@ DEFAULT_PASSWORD=hadoop
 #+++++ Remote Infrastructure++++#
 
 #Cloud
-SSH_USER=heart
-SSH_SERVER_PASSWORD=heart
-SSH_SERVER_PRIVATE_KEY=
+SSH_USER=ec2-user
+SSH_SERVER_PASSWORD=
+SSH_SERVER_PRIVATE_KEY=/tmp/oneclick_key.pem
 DOMAIN_NAME=ec2.internal
 
 #+++++++++++++++++++++++++++++++#
 
 #Add your hostnames below ( without FQDN )
 #NOTE: For Cloud Instances Please Enter Internal Hostname and IPaddress
-HOST1=ip-10-0-1-128
-IP1=10.0.1.128
-PUBLIC_IP=34.239.199.128
-
-HOST2=ip-10-0-1-74
-IP2=10.0.1.74
-
-HOST3=ip-10-0-1-236
-IP4=10.0.1.236
+HOST1=ip-10-0-1-22
+IP1=10.0.1.22
+PUBLIC_IP=35.169.124.51
 
 #######################  EDIT BELOW INFORMATION ONLY IF YOU KNOW WHAT YOU ARE DOING!! :)  #######################
 
@@ -66,3 +58,4 @@ HOST3_SERVICES="ZOOKEEPER_CLIENT,HDFS_CLIENT,MAPREDUCE2_CLIENT"
 ##OOZIE_SERVER
 ##OOZIE_CLIENT
 #++++++++++++++++++++++++++++
+

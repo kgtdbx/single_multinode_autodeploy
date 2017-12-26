@@ -32,13 +32,30 @@ AMBARI_SERVER=`grep -w HOST[0-9]* $LOC/$CLUSTER_PROPERTIES|head -1|cut -d'=' -f2
 AMBARI_AGENTS=`grep -w HOST[0-9]* $LOC/$CLUSTER_PROPERTIES|cut -d'=' -f2`
 USER=`grep -w SSH_USER $LOC/$CLUSTER_PROPERTIES|cut -d'=' -f2`
 PASSWORD=`grep -w SSH_SERVER_PASSWORD $LOC/$CLUSTER_PROPERTIES|cut -d'=' -f2`
+PVT_KEY=`grep -w SSH_SERVER_PRIVATE_KEY $LOC/$CLUSTER_PROPERTIES|cut -d'=' -f2`
 IP=`grep -w IP[1-9]* $LOC/$CLUSTER_PROPERTIES|cut -d'=' -f2|head -n 1`
 REPO_SERVER=`grep  -w REPO_SERVER  $LOC/$CLUSTER_PROPERTIES |cut -d'=' -f2`
 JAVA_HOME=`grep  -w JAVA  $LOC/$CLUSTER_PROPERTIES |cut -d'=' -f2`
 AS=`grep -w HOST[0-9]* $LOC/$CLUSTER_PROPERTIES|head -1|cut -d'=' -f2`
 AMBARI_SERVER_IP=`awk "/$AS/{getline; print}"  $LOC/$CLUSTER_PROPERTIES|cut -d'=' -f 2`
-ssh_cmd='sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"'
 
+if [ -z $PVT_KEY ]
+then
+	echo -e "\033[32m`timestamp` \033[32mUsing Plain Password For Cluster Setup\033[0m"
+	ssh_cmd="sshpass -p $PASSWORD ssh"
+	scp_cmd="sshpass -p $PASSWORD scp"
+else
+	echo -e "\033[32m`timestamp` \033[32mUsing Private Key For Cluster Setup\033[0m"
+	ssh_cmd="ssh -i $PVT_KEY"
+	scp_cmd="scp -i $PVT_KEY"
+	if [ -e $PVT_KEY ]
+	then
+		echo "File Exist" &> /dev/null
+	else
+		echo -e "\033[35mPrivate key is missing.. Please check!!!\033[0m"
+		exit 1;
+	fi
+fi
 
 prepare_hosts_file()
 {
@@ -100,31 +117,43 @@ pre-rep()
         if [ "$CLUSTER_PROPERTIES" = "cluster_cloud.props" ]
         then
 		sudo rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/sshpass-1.06-2.el7.x86_64.rpm &> /tmp/sshpass_install.txt
-        	sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_AGENT sudo mkdir /etc/yum.repos.d/bkp 2> /dev/null
-		sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_AGENT "sudo mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/bkp/"  2> /dev/null
                         wait
-                        sshpass -p $PASSWORD scp -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/ambari-"$AMBARIVERSION".repo $USER@$host_ip:/tmp/ambari-"$AMBARIVERSION".repo &> /dev/null 
+        		$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_AGENT sudo mkdir /etc/yum.repos.d/bkp 2> /dev/null
                         wait
-                        sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo cp /tmp/ambari-"$AMBARIVERSION".repo /etc/yum.repos.d/ 2> /dev/null &
+			$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_AGENT "sudo mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/bkp/"  2> /dev/null
                         wait
-                        sshpass -p $PASSWORD scp -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/centos7.repo $USER@$host_ip:/tmp/centos7.repo 2> /dev/null
+                        $scp_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/ambari-"$AMBARIVERSION".repo $USER@$host_ip:/tmp/ambari-"$AMBARIVERSION".repo &> /dev/null 
                         wait
-                        sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo cp /tmp/centos7.repo /etc/yum.repos.d/ 2> /dev/null
-	        	sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo yum -y install mysql-community-release 2&>1 /dev/null
-			sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER "sudo mv /etc/yum.repos.d/mysql*.repo /tmp" &> /dev/null
+                        $ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo cp /tmp/ambari-"$AMBARIVERSION".repo /etc/yum.repos.d/ 2> /dev/null &
+                        wait
+                        $scp_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/centos7.repo $USER@$host_ip:/tmp/centos7.repo &> /dev/null
+                        wait
+                        $ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo cp /tmp/centos7.repo /etc/yum.repos.d/ 2> /dev/null
+                        wait
+	        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo yum clean all 2&>1 /dev/null
+                        wait
+	        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo yum -y install mysql-community-release 2&>1 /dev/null
+                        wait
+			$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER "sudo mv /etc/yum.repos.d/mysql*.repo /tmp" &> /dev/null
                         wait
         else
 			rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/sshpass-1.06-2.el7.x86_64.rpm &> /tmp/sshpass_install.txt
-        	sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip mkdir /etc/yum.repos.d/bkp  &> /dev/null
-		sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip  mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/bkp/  &> /dev/null
                         wait
-                        sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip rm -rf /etc/yum.repos.d/ambari-*.repo 2> /dev/null  &
+        		$ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip mkdir /etc/yum.repos.d/bkp  &> /dev/null
                         wait
-                        sshpass -p $PASSWORD scp -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/ambari-"$AMBARIVERSION".repo $USER@$host_ip:/etc/yum.repos.d/ 2> /dev/null &
+			$ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip  mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/bkp/  &> /dev/null
                         wait
-                        sshpass -p $PASSWORD scp -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/centos7.repo $USER@$host_ip:/etc/yum.repos.d/ 2> /dev/null &
-			sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER yum -y install mysql-community-release 2&>1 /dev/null
-                	sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER "mv /etc/yum.repos.d/mysql*.repo /tmp" &> /dev/null
+                        $ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip rm -rf /etc/yum.repos.d/ambari-*.repo 2> /dev/null  &
+                        wait
+                        $scp_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/ambari-"$AMBARIVERSION".repo $USER@$host_ip:/etc/yum.repos.d/ 2> /dev/null &
+                        wait
+                        $scp_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/centos7.repo $USER@$host_ip:/etc/yum.repos.d/ &> /dev/null &
+                        wait
+	        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER yum clean all 2&>1 /dev/null
+                        wait
+			$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER yum -y install mysql-community-release 2&>1 /dev/null
+                        wait
+                	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER "mv /etc/yum.repos.d/mysql*.repo /tmp" &> /dev/null
                         wait
         fi
         done
@@ -139,9 +168,9 @@ install_java()
                 HOST=`echo $host`.$DOMAIN_NAME
 		if [ "$CLUSTER_PROPERTIES" = "cluster_cloud.props" ]
         	then
-			sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$HOST sudo rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/jdk-8u151-linux-x64.rpm &> /tmp/java_install.txt
+			$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$HOST sudo rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/jdk-8u151-linux-x64.rpm &> /tmp/java_install.txt
 		else
-			sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$HOST rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/jdk-8u151-linux-x64.rpm &> /tmp/java_install.txt
+			$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$HOST rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/jdk-8u151-linux-x64.rpm &> /tmp/java_install.txt
 		fi
 			
 	done
@@ -158,24 +187,24 @@ bootstrap_hosts()
                 if [ "$CLUSTER_PROPERTIES" = "cluster_cloud.props" ]
                 then
                 	wait
-                	sshpass -p $PASSWORD scp -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/hosts $USER@$host_ip:/tmp/hosts.org 2> /dev/null &
+                	$scp_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/hosts $USER@$host_ip:/tmp/hosts.org &> /dev/null &
                 	wait
-                	sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo mv /tmp/hosts.org /etc/hosts 2> /dev/null &
-                	sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo sed -i.bak "s/$USERNAME-$HOST/$HOST/g" /etc/sysconfig/network  2> /dev/null &
-                	sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip "sudo echo HOSTNAME=$HOST >> /etc/sysconfig/network"  2> /dev/null &
+                	$ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo mv /tmp/hosts.org /etc/hosts 2> /dev/null &
+                	$ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo sed -i.bak "s/$USERNAME-$HOST/$HOST/g" /etc/sysconfig/network  2> /dev/null &
+                	$ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip "sudo echo HOSTNAME=$HOST >> /etc/sysconfig/network"  2> /dev/null &
 
                 	printf "sudo hostname "$HOST" 2>/dev/null\nsudo hostnamectl set-hostname "$HOST"\nsudo hostnamectl set-hostname "$HOST" --static\nsudo systemctl restart systemd-hostnamed\nsudo systemctl stop firewalld.service 2>/dev/null\nsudo systemctl disable firewalld.service 2> /dev/null" > /tmp/commands_centos7
-                	cat /tmp/commands_centos7|sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip 2>/dev/null			
+                	cat /tmp/commands_centos7|$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip 2>/dev/null			
 		else
 			wait 
-			sshpass -p $PASSWORD scp -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/hosts $USER@$host_ip:/tmp/hosts.org 2> /dev/null &
+			$scp_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/hosts $USER@$host_ip:/tmp/hosts.org &> /dev/null &
 			wait 
-                        sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo mv /tmp/hosts.org /etc/hosts 2> /dev/null &
-                	sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sed -i.bak "s/$USERNAME-$HOST/$HOST/g" /etc/sysconfig/network  2> /dev/null & 
-			sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip "echo HOSTNAME=$HOST >> /etc/sysconfig/network"  2> /dev/null &
+                        $ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo mv /tmp/hosts.org /etc/hosts 2> /dev/null &
+                	$ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sed -i.bak "s/$USERNAME-$HOST/$HOST/g" /etc/sysconfig/network  2> /dev/null & 
+			$ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip "echo HOSTNAME=$HOST >> /etc/sysconfig/network"  2> /dev/null &
 
                 	printf "hostname "$HOST" 2>/dev/null\nhostnamectl set-hostname "$HOST"\nhostnamectl set-hostname "$HOST" --static\nsystemctl restart systemd-hostnamed\nsystemctl stop firewalld.service 2>/dev/null 2> /dev/null\nsystemctl disable firewalld.service 2> /dev/null" > /tmp/commands_centos7
-                	cat /tmp/commands_centos7|sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip 2>/dev/null
+                	cat /tmp/commands_centos7|$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip 2>/dev/null
 		fi
         done
 }
@@ -190,18 +219,18 @@ setup_ambari_server()
 #        ssh -i $PVT_KEYFILE -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER ambari-server start
         if [ "$CLUSTER_PROPERTIES" = "cluster_cloud.props" ]
         then
-	        sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo yum -y install wget 2&>1 /dev/null
-		sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/jdk-8u151-linux-x64.rpm 2&>1 /dev/null
-        	sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo yum -y install ambari-server 2&>1 /dev/null
-        	sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo ambari-server setup -s --java-home=$JAVA_HOME &>/tmp/as_setup.txt
-        	sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo ambari-server start &> /tmp/as_startup.txt	
+	        $ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo yum -y install wget 2&>1 /dev/null
+		$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/jdk-8u151-linux-x64.rpm 2&>1 /dev/null
+        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo yum -y install ambari-server 2&>1 /dev/null
+        	$ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo ambari-server setup -s --java-home=$JAVA_HOME &>/tmp/as_setup.txt
+        	$ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo ambari-server start &> /tmp/as_startup.txt	
         else
 
-        	sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER yum -y install wget 2&>1 /dev/null
-        	sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/jdk-8u151-linux-x64.rpm 2&>1 /dev/null
-        	sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER yum -y install ambari-server 2&>1 /dev/null
-        	sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER ambari-server setup -s --java-home=$JAVA_HOME &>/tmp/as_setup.txt
-		sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER ambari-server start &> /tmp/as_startup.txt
+        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER yum -y install wget 2&>1 /dev/null
+        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/jdk-8u151-linux-x64.rpm 2&>1 /dev/null
+        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER yum -y install ambari-server 2&>1 /dev/null
+        	$ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER ambari-server setup -s --java-home=$JAVA_HOME &>/tmp/as_setup.txt
+		$ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER ambari-server start &> /tmp/as_startup.txt
 	fi
 }
 
@@ -215,14 +244,14 @@ setup_ambari_agent()
         if [ "$CLUSTER_PROPERTIES" = "cluster_cloud.props" ]
         then
 		
-		sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT sudo yum -y install ambari-agent 2&>1 /tmp/aa_install.txt
-		sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT sudo ambari-agent reset $AMBARI_SERVER &> /tmp/aa_reset.txt
-		sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT sudo service ambari-agent start &> /tmp/aa_start.txt
+		$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT sudo yum -y install ambari-agent 2&>1 /tmp/aa_install.txt
+		$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT sudo ambari-agent reset $AMBARI_SERVER &> /tmp/aa_reset.txt
+		$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT sudo service ambari-agent start &> /tmp/aa_start.txt
 	else
-		sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT yum -y install ambari-agent 2&>1 /tmp/aa_install.txt
-		sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT ambari-agent reset $AMBARI_SERVER &> /tmp/aa_reset.txt
-		sshpass -p $PASSWORD ssh  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT service ambari-agent start 2&>1 /tmp/aa_start.txt
-                #cat /tmp/commands_ambari_agent|sshpass -p $PASSWORD ssh -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT & 2&>1 /dev/null
+		$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT yum -y install ambari-agent 2&>1 /tmp/aa_install.txt
+		$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT ambari-agent reset $AMBARI_SERVER &> /tmp/aa_reset.txt
+		$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT service ambari-agent start 2&>1 /tmp/aa_start.txt
+                #cat /tmp/commands_ambari_agent|$ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null" $USER@$AMBARI_AGENT & 2&>1 /dev/null
 	fi
         done
         wait
