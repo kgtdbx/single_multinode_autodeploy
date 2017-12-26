@@ -118,9 +118,9 @@ pre-rep()
         then
 		sudo rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/sshpass-1.06-2.el7.x86_64.rpm &> /tmp/sshpass_install.txt
                         wait
-        		$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_AGENT sudo mkdir /etc/yum.repos.d/bkp 2> /dev/null
+        		$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo mkdir /etc/yum.repos.d/bkp 2> /dev/null
                         wait
-			$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_AGENT "sudo mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/bkp/"  2> /dev/null
+			$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip "sudo mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/bkp/"  2> /dev/null
                         wait
                         $scp_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/ambari-"$AMBARIVERSION".repo $USER@$host_ip:/tmp/ambari-"$AMBARIVERSION".repo &> /dev/null 
                         wait
@@ -130,11 +130,11 @@ pre-rep()
                         wait
                         $ssh_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo cp /tmp/centos7.repo /etc/yum.repos.d/ 2> /dev/null
                         wait
-	        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo yum clean all 2&>1 /dev/null
+	        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo yum clean all 2&>1 /dev/null
                         wait
-	        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER sudo yum -y install mysql-community-release 2&>1 /dev/null
+	        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip sudo yum -y install mysql-community-release 2&>1 /dev/null
                         wait
-			$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER "sudo mv /etc/yum.repos.d/mysql*.repo /tmp" &> /dev/null
+			$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip "sudo mv /etc/yum.repos.d/mysql*.repo /tmp" &> /dev/null
                         wait
         else
 			rpm -ivh http://$REPO_SERVER/repo/custom_pkgs/sshpass-1.06-2.el7.x86_64.rpm &> /tmp/sshpass_install.txt
@@ -149,11 +149,11 @@ pre-rep()
                         wait
                         $scp_cmd -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  /tmp/centos7.repo $USER@$host_ip:/etc/yum.repos.d/ &> /dev/null &
                         wait
-	        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER yum clean all 2&>1 /dev/null
+	        	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip yum clean all 2&>1 /dev/null
                         wait
-			$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER yum -y install mysql-community-release 2&>1 /dev/null
+			$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip yum -y install mysql-community-release 2&>1 /dev/null
                         wait
-                	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$AMBARI_SERVER "mv /etc/yum.repos.d/mysql*.repo /tmp" &> /dev/null
+                	$ssh_cmd  -o "StrictHostKeyChecking no" -o "CheckHostIP=no" -o "UserKnownHostsFile=/dev/null"  $USER@$host_ip "mv /etc/yum.repos.d/mysql*.repo /tmp" &> /dev/null
                         wait
         fi
         done
@@ -286,9 +286,9 @@ generate_centos_repo
 echo -e  "\033[32m`timestamp` \033[32mSetting up Ambari Repository\033[0m"
 generate_ambari_repo
 echo -e  "\033[32m`timestamp` \033[32mCheck for Pre-requisites\033[0m"
-pre-rep
-install_java
-bootstrap_hosts
-setup_ambari_server
-setup_ambari_agent
+#pre-rep
+#install_java
+#bootstrap_hosts
+#setup_ambari_server
+#setup_ambari_agent
 setup_hdp
