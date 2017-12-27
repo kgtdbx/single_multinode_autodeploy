@@ -18,8 +18,8 @@ UTILS_VERSION=1.1.0.21
 NUM_OF_NODES=3
 #Specify domain name
 DOMAIN_NAME=example.com
-#Default password for Ambari UI Login
-DEFAULT_PASSWORD=admin
+#Default password for all required passwords which are not specified in the blueprint or cluster creation template configurations
+DEFAULT_PASSWORD=hadoop
 #Username to ssh into the nodes for Ambari and Hadoop installation [Its mandate to define "root" user here]
 SSH_USER=root
 #Password for above username ["root" user password to be defined]
