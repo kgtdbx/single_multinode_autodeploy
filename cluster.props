@@ -17,7 +17,7 @@ SSH_SERVER_PASSWORD=a
 
 #Add your hostnames below ( without FQDN )
 
-HOST1=node3
+HOST1=node1
 IP1=192.168.56.111
 
 #######################  EDIT BELOW INFORMATION ONLY IF YOU KNOW WHAT YOU ARE DOING!! :)  #######################
