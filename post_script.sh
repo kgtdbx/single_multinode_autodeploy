@@ -1,4 +1,9 @@
 #!/bin/bash
+#Author - Sagar Shimpi
+#Contributor - xxxxxxxx
+#Script will execute post installation script
+##########################################################
+
 
 #+++++++++++++++++++++++
 # Usage Function
@@ -8,13 +13,6 @@ then
         exit
 fi
 #+++++++++++++++++++++++
-
-
-#Function to print timestamp
-timestamp()
-{
-echo -e  "\033[36m`date +%Y-%m-%d-%H:%M:%S`\033[0m"
-}
 
 
 #Globals VARS

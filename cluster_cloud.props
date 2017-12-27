@@ -1,27 +1,41 @@
 #######################  EDIT BELOW INFORMATION  #######################
 
+#Define you hdp cluster name here
 CLUSTERNAME=hdptest
+#OS version
 OS=centos7
+#Java version
 JAVA=/usr/java/jdk1.8.0_151
+#Ambari Server version
 AMBARIVERSION=2.5.2.0
+#HDP version
 CLUSTER_VERSION=2.5.3.0
+#HDP_UTILS version
 UTILS_VERSION=1.1.0.21
-#NUM_OF_NODES=3
-DEFAULT_PASSWORD=hadoop
+#Number of nodes on which you are going to install Ambari and HDP components
+NUM_OF_NODES=3
+#Default password for Ambari UI Login
+DEFAULT_PASSWORD=admin
 
 
 #+++++ Remote Infrastructure++++#
 
-#Cloud
+#Username to ssh into the nodes for Ambari and Hadoop installation
 SSH_USER=ec2-user
+#Password for above defined username
 SSH_SERVER_PASSWORD=
+#Specify Private Key if you are not using password to ssh
 SSH_SERVER_PRIVATE_KEY=/tmp/oneclick_key.pem
+#Specify domain name
 DOMAIN_NAME=ec2.internal
 
 #+++++++++++++++++++++++++++++++#
 
-#Add your hostnames below ( without FQDN )
-#NOTE: For Cloud Instances Please Enter Internal Hostname and IPaddress
+#Add your hostnames below ( Make sure it should be mentioned without FQDN ) 
+#NOTE: For Cloud Instances Please Enter Internal Hostname and IPaddress and public ipaddress for "PUBLIC_IP"
+#HOST1 is considered always as Ambari Server node
+#If you are doing single node installation then remove all below HOST entries and keep only one entry
+
 HOST1=ip-10-0-1-250
 IP1=10.0.1.250
 PUBLIC_IP=34.205.203.211
@@ -36,20 +50,28 @@ IP3=10.0.1.131
 
 #######################  EDIT BELOW INFORMATION ONLY IF YOU KNOW WHAT YOU ARE DOING!! :)  #######################
 
+
+#Repository server ipaddress
 REPO_SERVER=10.0.1.206
+
+#You can define "Services" to be installed on respective HOSTS with comma seperated values as mentioned below.
+#Make sure you can modify below section properly making sure all services dependencies are defined properly, else cluster installation with FAIL.
 HOST1_SERVICES="NAMENODE,NODEMANAGER,DATANODE,ZOOKEEPER_CLIENT,HDFS_CLIENT,YARN_CLIENT,MAPREDUCE2_CLIENT,ZOOKEEPER_SERVER,SECONDARY_NAMENODE,RESOURCEMANAGER,APP_TIMELINE_SERVER,HISTORYSERVER,HBASE_MASTER,HBASE_REGIONSERVER,HBASE_CLIENT,HIVE_SERVER,HIVE_CLIENT,MYSQL_SERVER,HIVE_METASTORE,TEZ_CLIENT,HCAT,WEBHCAT_SERVER,SLIDER"
 HOST2_SERVICES="ZOOKEEPER_CLIENT,HDFS_CLIENT,YARN_CLIENT,MAPREDUCE2_CLIENT,SQOOP,PIG"
 HOST3_SERVICES="ZOOKEEPER_CLIENT,HDFS_CLIENT,MAPREDUCE2_CLIENT,OOZIE_SERVER,OOZIE_CLIENT"
 
 
 #++++++++++++++++++++++++++++
+#For SPARK defined below services
 #SPARK2_CLIENT
 ##SPARK2_JOBHISTORYSERVER
 #++++++++++++++++++++++++++++
+#For HBASE defined below services
 ##HBASE_MASTER
 ##HBASE_REGIONSERVER
 ##HBASE_CLIENT
 #++++++++++++++++++++++++++++
+#For HIVE defined below services
 ##HIVE_SERVER
 ##HIVE_CLIENT
 ##MYSQL_SERVER
@@ -59,10 +81,13 @@ HOST3_SERVICES="ZOOKEEPER_CLIENT,HDFS_CLIENT,MAPREDUCE2_CLIENT,OOZIE_SERVER,OOZI
 ##WEBHCAT_SERVER
 ##SLIDER
 #++++++++++++++++++++++++++++
+#For SQOOP defined below services
 ##SQOOP
 #++++++++++++++++++++++++++++
+#For PIG defined below services
 ##PIG
 #++++++++++++++++++++++++++++
+#For OOZIE defined below services
 ##OOZIE_SERVER
 ##OOZIE_CLIENT
 #++++++++++++++++++++++++++++

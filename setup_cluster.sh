@@ -14,7 +14,6 @@ then
 fi
 #+++++++++++++++++++++++
 
-
 #Function to print timestamp
 timestamp()
 {
@@ -38,6 +37,22 @@ REPO_SERVER=`grep  -w REPO_SERVER  $LOC/$CLUSTER_PROPERTIES |cut -d'=' -f2`
 JAVA_HOME=`grep  -w JAVA  $LOC/$CLUSTER_PROPERTIES |cut -d'=' -f2`
 AS=`grep -w HOST[0-9]* $LOC/$CLUSTER_PROPERTIES|head -1|cut -d'=' -f2`
 AMBARI_SERVER_IP=`awk "/$AS/{getline; print}"  $LOC/$CLUSTER_PROPERTIES|cut -d'=' -f 2`
+NUM_OF_HOSTS=`cat $LOC/$CLUSTER_PROPERTIES|grep -w HOST[1-50] |wc -l`
+
+
+#+++++++++++++++++++++++
+# Check NUM_OF_NODES and NUM_OF_HOSTS in proeprties file
+
+if [[ $NUM_OF_NODES -eq $NUM_OF_HOSTS ]]
+then
+        echo "Both values are Equal" > /dev/null
+else
+        echo -e '\033[41mWARNING!!!!\033[0m \033[36m"NUM_OF_HOSTS" and "NUM_OF_NODES" defined in  $LOC/$CLUSTER_PROPERTIES are not equal. Please remove unwanted entries from file or correct "NUM_OF_NODES" value..\033[0m'
+	exit 1;
+fi
+
+#+++++++++++++++++++++++
+
 
 if [ -z $PVT_KEY ]
 then
