@@ -14,8 +14,8 @@ CLUSTER_VERSION=2.5.3.0
 UTILS_VERSION=1.1.0.21
 #Number of nodes on which you are going to install Ambari and HDP components
 NUM_OF_NODES=3
-#Default password for Ambari UI Login
-DEFAULT_PASSWORD=admin
+#Default password for all required passwords which are not specified in the blueprint or cluster creation template configurations
+DEFAULT_PASSWORD=hadoop
 
 
 #+++++ Remote Infrastructure++++#
@@ -24,7 +24,7 @@ DEFAULT_PASSWORD=admin
 SSH_USER=ec2-user
 #Password for above defined username
 SSH_SERVER_PASSWORD=
-#Specify Private Key if you are not using password to ssh
+#Specify Private Key path below, if you are using private key to ssh instead of 'password'
 SSH_SERVER_PRIVATE_KEY=/tmp/oneclick_key.pem
 #Specify domain name
 DOMAIN_NAME=ec2.internal
