@@ -19,4 +19,5 @@ This code will help you to install Ambari along with HDP in automated way irresp
 #Steps run the script
 
 #git clone https://github.com/shimpisagar/single_multinode_autodeploy.git
+
 #./setup_cluster.sh <path_to_cluster_props_file>
