@@ -24,7 +24,7 @@ DEFAULT_PASSWORD=hadoop
 SSH_USER=ec2-user
 #Password for above defined username
 SSH_SERVER_PASSWORD=
-#Specify Private Key if you are not using password to ssh
+#Specify Private Key path below, if you are using private key to ssh instead of 'password'
 SSH_SERVER_PRIVATE_KEY=/tmp/oneclick_key.pem
 #Specify domain name
 DOMAIN_NAME=ec2.internal
