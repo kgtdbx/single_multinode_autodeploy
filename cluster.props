@@ -27,7 +27,7 @@ SSH_SERVER_PASSWORD=a
 
 
 #Add your hostnames below ( Make sure it should be mentioned without FQDN )
-#HOST1 is considered always as Ambari Server node
+#HOST 1 is considered always as Ambari Server node
 #If you are doing single node installation then remove all below HOST entries and keep only one entry
 
 HOST1=node1
