@@ -15,7 +15,7 @@ CLUSTER_VERSION=2.5.3.0
 #HDP_UTILS version
 UTILS_VERSION=1.1.0.21
 #Number of nodes on which you are going to install Ambari and HDP components
-NUM_OF_NODES=3
+NUM_OF_NODES=1
 #Specify domain name
 DOMAIN_NAME=example.com
 #Default password for all required passwords which are not specified in the blueprint or cluster creation template configurations
@@ -27,8 +27,8 @@ SSH_SERVER_PASSWORD=a
 
 
 #Add your hostnames below ( Make sure it should be mentioned without FQDN )
-#HOST 1 is considered always as Ambari Server node
-#If you are doing single node installation then remove all below HOST entries and keep only one entry
+#host 1 is considered always as Ambari Server node
+#If you are doing single node installation then remove all below host entries and keep only one entry
 
 HOST1=node1
 IP1=192.168.56.111

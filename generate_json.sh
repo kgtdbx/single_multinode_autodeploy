@@ -157,7 +157,7 @@ curl -H "X-Requested-By: ambari" -X PUT -u admin:admin http://$AMBARI_HOST:8080/
 sleep 1
 curl -H "X-Requested-By: ambari" -X PUT -u admin:admin http://$AMBARI_HOST:8080/api/v1/stacks/HDP/versions/$STACK_VERSION/operating_systems/redhat"$OS_VERSION"/repositories/$HDP_UTILS_VERSION -d @$LOC/repo-utils.json 2&>1 /tmp/repo_utils_json.txt
 sleep 1
-curl -H "X-Requested-By: ambari" -X POST -u admin:admin http://$AMBARI_HOST:8080/api/v1/clusters/$CLUSTERNAME -d @$LOC/hostmap.json 2&>1 /tmp/hostmap_json.txt
+curl -H "X-Requested-By: ambari" -X POST -u admin:admin http://$AMBARI_HOST:8080/api/v1/clusters/$CLUSTERNAME -d @$LOC/hostmap.json &> /tmp/hostmap_json.txt
 
 }
 
